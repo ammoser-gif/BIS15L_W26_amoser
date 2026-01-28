@@ -70,44 +70,19 @@ elephants_factors %>%
 
 **8. What is the mean, median, and standard deviation for age of males and females included in the study? Separate the results by year of sample collection. Does the sampling look even between years and sexes?**  
 
-Note: You can decide if it looks even, no specific range of deviation
-
 ```{r}
 elephants_factors %>% 
   select(years_of_sample_collection, sex, estimated_age_years) %>% 
-  filter(years_of_sample_collection == "1966-68") %>% 
-  filter(sex == "f") %>% 
-  summarise(mean_age_f = mean(estimated_age_years,na.rm = TRUE),
-            median_age_f = median(estimated_age_years,na.rm = TRUE),
-            sd_age_f = sd(estimated_age_years,na.rm = TRUE)
-            )
-elephants_factors %>% 
-  select(years_of_sample_collection, sex, estimated_age_years) %>% 
-  filter(years_of_sample_collection == "1966-68") %>% 
-  filter(sex == "m") %>% 
-  summarise(mean_age_m = mean(estimated_age_years,na.rm = TRUE),
-            median_age_m = median(estimated_age_years,na.rm = TRUE),
-            sd_age_m = sd(estimated_age_years,na.rm = TRUE)
-            )
-elephants_factors %>% 
-  select(years_of_sample_collection, sex, estimated_age_years) %>% 
-  filter(years_of_sample_collection == "2005-13") %>% 
-  filter(sex == "f") %>% 
-  summarise(mean_age_f = mean(estimated_age_years,na.rm = TRUE),
-            median_age_f = median(estimated_age_years,na.rm = TRUE),
-            sd_age_f = sd(estimated_age_years,na.rm = TRUE)
-            )
-elephants_factors %>% 
-  select(years_of_sample_collection, sex, estimated_age_years) %>% 
-  filter(years_of_sample_collection == "2005-13") %>% 
-  filter(sex == "m") %>% 
-  summarise(mean_age_m = mean(estimated_age_years,na.rm = TRUE),
-            median_age_m = median(estimated_age_years,na.rm = TRUE),
-            sd_age_m = sd(estimated_age_years,na.rm = TRUE)
+  group_by(years_of_sample_collection, sex) %>% 
+  summarise(mean_age = mean(estimated_age_years,na.rm = TRUE),
+            median_age = median(estimated_age_years,na.rm = TRUE),
+            sd_age = sd(estimated_age_years,na.rm = TRUE),
+            sample_size = n(),
+            .groups = "drop"
             )
 ```
 
-
+Sampling does not look even between years because there is a significant difference between the sampling sizes of males and females.  The sample sizes from 1966 to 1968 are are close to 400 each while the sample sizes from 2005 to 2013 are less than 100 each.
 
 **9. Is age (independent variable) a positive predictor of tusk length (dependent variable)? Create a plot that shows the relationship between these variables and add a linear model fit line.**  
 
@@ -141,22 +116,34 @@ elephants_factors %>%
   )
 ```
 
-Age is indeed a positive predictor of tusk length due to the above plot producing a positive, linear trend line.
+Shoulder is indeed a positive predictor of tusk length due to the above plot producing a positive, linear trend line.
 
 **11. The authors argue that because poachers preferentially target elephants with large tusks, this has resulted in a decrease in average tusk length. Is this supported by the data? Show your code and calculations below.**  
 
 ```{r}
-# elephants_factors %>% 
-  # select(years_of_sample_collection, tusk_length_in_cm) %>% 
-  # summarise(mean_tusk_length_)
+elephants_factors %>% 
+  select(years_of_sample_collection, tusk_length_in_cm) %>% 
+  group_by(years_of_sample_collection) %>% 
+  summarise(mean_tusk_length = mean(tusk_length_in_cm, na.rm = TRUE))
 ```
 
+This argument has support as the observed average tusk length from 2005 to 2013 is about 19 cm lower than the observed average tusk length from 1966 to 1968.
+
 **12. Male elephants reach effective sexual maturity at 25 years while females are sexually mature at 12 years. Make a new dataframe that extracts only the males and females at sexual maturity. Then, make a plot that shows the range of tusk length between the two sample periods for these mature elephants.**   
-\
-\
-\
-\
-\
+
+```{r}
+elephants_sexually_mature <- elephants_factors %>% 
+  filter(sex == "m" & estimated_age_years >= 25 | sex == "f" & estimated_age_years >= 12)
+elephants_sexually_mature %>% 
+  select(years_of_sample_collection, tusk_length_in_cm) %>% 
+  ggplot(aes(x = tusk_length_in_cm, y = years_of_sample_collection, fill = years_of_sample_collection)) +
+  geom_boxplot(na.rm=TRUE) +
+  labs(
+    title = "Tusk Length per Year Period of Sample Collection",
+    x = "Tusk Length (cm)",
+    y = "Sample Period in Years"
+  )
+```
 
 ## Submit the Homework
 1. Save your work and knit the .rmd file.  

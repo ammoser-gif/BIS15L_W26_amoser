@@ -1,0 +1,130 @@
+---
+title: "Homework 6"
+author: "Arden Moser"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    theme: spacelab
+---
+
+## Instructions
+Answer the following questions and/or complete the exercises in RMarkdown. Please embed all of your code and push the final work to your repository. Your report should be organized, clean, and run free from errors. Remember, you must remove the `#` for any included code chunks to run.  
+
+## Load the tidyverse
+```{r message=FALSE, warning=FALSE}
+library("tidyverse")
+library("janitor")
+```
+
+## Data 
+For this assignment, we will use data from a study on vertebrate community composition and impacts from defaunation in [Gabon, Africa](https://en.wikipedia.org/wiki/Gabon). One thing to notice is that the data include 24 separate transects. Each transect represents a path through different forest management areas.  
+
+Reference: Koerner SE, Poulsen JR, Blanchard EJ, Okouyi J, Clark CJ. Vertebrate community composition and diversity declines along a defaunation gradient radiating from rural villages in Gabon. _Journal of Applied Ecology_. 2016. A description of the variables is included inside the data folder.   
+
+**1. Load `IvindoData_DryadVersion.csv` and store it as a new object called `gabon`.**
+```{r}
+gabon <- read_csv("data/IvindoData_DryadVersion.csv")
+```
+
+**2. Use one or more of the summary functions you have learned to get an idea of the structure of the data.**  
+```{r}
+glimpse(gabon)
+```
+
+**3. Clean the data as necessary following the conventions from lab 6.**
+```{r}
+gabon %>% clean_names()
+```
+
+```{r}
+gabon %>%
+  clean_names() %>% 
+  mutate(across(where(is.character), tolower))
+```
+
+**4. Use `mutate()` Change the variables `HuntCat`, `LandUse`, and `TransectID` to factors. Be sure to store the output as a new dataframe and use it for the remaining questions.**
+```{r}
+gabon_factors <- gabon %>% 
+  mutate(across(c(HuntCat, LandUse, TransectID), as.factor))
+```
+
+**5. Make a plot that shows the number of transects for each land use type.**
+```{r}
+gabon_factors %>% 
+  ggplot(mapping = aes(x = LandUse, fill = LandUse)) +
+  geom_bar() +
+  labs(
+    title = "Number of Transects per Land Use Type",
+    x = "Land Use",
+    y = "Transects"
+  )
+```
+
+**6. How does vegetation richness compare among land use types?**
+```{r}
+gabon_factors %>% 
+  ggplot(mapping = aes(x = Veg_Rich, y = LandUse, fill = LandUse)) +
+  geom_boxplot() +
+  labs(
+    title = "Vegetation Richness per Land Use Type",
+    x = "Number of Tree Species",
+    y = "Land Use",
+  )
+```
+
+Land used for logging has the widest range of vegetation richness, followed by land used for neither national parks or logging and then land used for national parks.  However, national parks have the highest average vegetation richness, followed by land used for logging and then land used for neither.  In addition, only national parks have a notably low outlier.
+
+**7. For which land use type (national parks, logging, or neither) is average all species diversity the greatest?**
+```{r}
+gabon_factors %>% 
+  ggplot(mapping = aes(x = Diversity_AllSpecies, y = LandUse, fill = LandUse)) +
+  geom_boxplot() +
+  labs(
+    title = "Species diversity per Land Use",
+    x = "Species Diversity",
+    y = "Land Use"
+  )
+```
+
+It seems that national parks have the greatest average species diversity of all the other land use types.
+
+**8. Is there a relationship between vegetation richness and mammal species richness?**
+```{r}
+gabon_factors %>% 
+  ggplot(mapping = aes(x = Veg_Rich, y = Rich_MammalSpecies)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Vegetation Richness vs. Mammal Species Richness",
+    x = "Number of Tree Species",
+    y = "Number of Mammal Species"
+  )
+```
+
+There seems to be a generally linear, positive relationship between vegetation richness and mammal species richness.
+
+**9. Use `filter` to find all transects that have greater than 15 tree species or a breast height diameter between 50 and 60cm.  **
+```{r}
+gabon_factors %>% 
+  select(TransectID, Veg_Rich) %>% 
+  filter(Veg_Rich>15)
+```
+
+I will note that I found no variable relating to breast height in the data, so I did not include it in the table above.  You may look at the list of variables below for further proof.
+
+```{r}
+names(gabon_factors)
+```
+
+**10.Which transects and land use types have more than 10 tree species and 10 mammal species? Use `arrange()` to sort by the number of tree species.**
+```{r}
+gabon_factors %>% 
+  select(TransectID, LandUse, Veg_Rich, Rich_MammalSpecies) %>% 
+  filter(Veg_Rich > 10 & Rich_MammalSpecies == 10) %>% 
+  arrange(Veg_Rich)
+```
+
+All the land use types (national parks, logging, or neither) have at least one transect that has more than 10 tree species and exactly 10 mammal species.  These transects are transect 2, transect 9, transect 13, transect 21, transect 25, and transect 26.
+
+## Knit and Upload
+Please knit your work as an .html file and upload to Canvas. Homework is due before the start of the next lab. No late work is accepted. Make sure to use the formatting conventions of RMarkdown to make your report neat and clean!  

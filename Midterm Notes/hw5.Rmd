@@ -1,0 +1,152 @@
+---
+title: "Homework 5"
+author: "Arden Moser"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    theme: spacelab
+---
+Personal Note: ALWAYS USE PIPES (%>%) for clarity
+
+## Instructions
+Answer the following questions and/or complete the exercises in RMarkdown. Please embed all of your code and push the final work to your repository. Your report should be organized, clean, and run free from errors. Remember, you must remove the `#` for any included code chunks to run. Any plots must have appropriate titles and aesthetics.  
+
+## Load the tidyverse
+```{r}
+library("tidyverse")
+options(scipen=999) #turn off scientific notation
+```
+
+## Data
+**Database of vertebrate home range sizes.** 
+Reference: Tamburello N, Cote IM, Dulvy NK (2015) Energy and the scaling of animal space use. The American Naturalist 186(2):196-211. http://dx.doi.org/10.1086/682070.  
+Data: http://datadryad.org/resource/doi:10.5061/dryad.q5j65/1  
+
+**1. Load the data into a new object called `homerange`.**
+```{r}
+homerange <- read.csv("data/Tamburelloetal_HomeRangeDatabase.csv")
+```
+
+**2. What is the structure of the `homerange` data? Does it have any NA's? Do a quick exploratory analysis of your choice below.**
+```{r}
+summary(homerange)
+```
+
+```{r}
+glimpse(homerange)
+names(homerange)
+```
+
+The "homerange" dataframe is a structured table with 569 rows and 24 columns labeled with the following variables: taxon, common.name, class, order, family, genus, species, primarymethod, N, mean.mass.g, log10.mass, alternative.mass.reference, mean.hra.m2, log10.hra, hra.reference, realm, thermoregulation, locomotion, trophic.guild, dimension, preymass, log10.preymass, PPMR, and prey.size.reference.  Its variables contain string and numeric data but several cells have NA.  The biggest offenders are "preymass", "log10.preymass", and "PPMR" with have over 500 NA's each.
+
+**3. Which animal groups are represented in the data? Make a plot that shows the number in each class.**
+```{r}
+ggplot(data = homerange, aes(x = class, fill = class)) +
+  geom_bar() +
+  labs(
+    title = "Number of Species per Class",
+    x = "Class",
+    y = "Number of Species"
+  )
+```
+
+Actinopterygii, aves, mammalia, and reptilia are represented in the data
+
+**4. Are there more carnivores or herbivores represented in the data? Make a plot that shows the number in each trophic guild.**
+```{r}
+ggplot(data = homerange %>% filter(trophic.guild=="carnivore" | trophic.guild=="herbivore"), aes(x = trophic.guild, fill = trophic.guild)) +
+  geom_bar() +
+  labs(
+    title = "Carnivore vs Herbivore Count",
+    x = "Trophic Guild",
+    y = "Number of Observations"
+  )
+```
+
+There are more carnivores represented in the data.
+
+**5. Which herbivorous mammals have homeranges greater than 1,000,000 m²? Show only the common name, order, mean homerange size, and mean body mass. Arrange the data in descending order by homerange size and show only the top 10 species.**
+```{r}
+homerange %>% 
+  select(common.name, order, mean.hra.m2, mean.mass.g, trophic.guild, taxon) %>% 
+  filter(trophic.guild=="herbivore" & taxon=="mammals") %>% 
+  select(common.name, order, mean.hra.m2, mean.mass.g) %>% 
+  arrange(desc(mean.hra.m2)) %>% 
+  filter(mean.hra.m2>=52399844.72)
+```
+
+Reindeer, African Bush Elephants, Greater Kudu, American Bison, Giraffes, Asian Elephants, Moose, Red Deer, Goats and Common Elands are the top ten herbivious mammals that have homeranges greater then 1,000,000 m².
+
+**6. Which two species have the largest and smallest homerange sizes?**
+```{r}
+homerange %>% 
+  select(common.name,mean.hra.m2) %>% 
+  arrange(desc(mean.hra.m2)) %>% 
+  filter(common.name=="reindeer" | common.name=="rusty goby")
+```
+
+Reindeer have the largest homerange sizes.  Rusty Gobies have the smallest homerange.
+
+**7. Which carnivorous mammals have the largest homeranges?**
+```{r}
+homerange %>% 
+  select(common.name, mean.hra.m2, trophic.guild, taxon) %>% 
+  filter(trophic.guild=="carnivore" & taxon=="mammals") %>% 
+  select(common.name, mean.hra.m2) %>% 
+  arrange(desc(mean.hra.m2))
+```
+
+Cheetahs, leopards, caracal, wolverines, cougars, Euresian lynx, Canada lynx, Jaguars, Jaguarundi, and Tigers are the top ten carnivorious mammals with the largest homeranges.
+
+**8. Is there a relationship between body mass and homerange size? Make a scatterplot to show this relationship. Be sure to include appropriate labels and a title.**
+```{r}
+ggplot(data = homerange, aes(x = mean.mass.g, y = mean.hra.m2)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(
+    title = "Body Mass vs. Home Range Size",
+    x = "Body Mass (log10 g)",
+    y = "Home Range Size (log10 m²)"
+  )
+```
+
+There seems to be a generally linear, positive relationship between body mass and home range sizes.
+
+**9. Use filter to extract the data for only birds and mammals. Then make a plot that compares the homerange sizes of these two groups. Be sure to include appropriate labels and a title.**
+```{r}
+ggplot(data = homerange %>%
+         filter(taxon == "birds" | taxon == "mammals"),
+       aes(x = taxon, y = mean.hra.m2, fill = taxon)) +
+  scale_y_log10() +
+  geom_boxplot() +
+  labs(
+    title = "Birds vs. Mammals based on Homerange",
+    x = "Taxon",
+    y = "Homerange (log10 m²)"
+  )
+```
+
+**10. Do one additional exploratory analysis of your choice. Before writing the code, write the question you are trying to answer. The question should be biologically meaningful and appropriate for the data. It must include at least one `filter()`, `select()`, and `arrange()`.**
+```{r}
+top10_homerange <- homerange %>% 
+  select(taxon, common.name, mean.hra.m2) %>% 
+  filter(taxon=="marine fishes") %>% 
+  select(common.name, mean.hra.m2) %>% 
+  arrange(desc(mean.hra.m2)) %>% 
+  filter(mean.hra.m2>=52773.00)
+top10_bodymass <- homerange %>% 
+  select(taxon, common.name, mean.mass.g) %>% 
+  filter(taxon=="marine fishes") %>% 
+  select(common.name, mean.mass.g) %>% 
+  arrange(desc(mean.mass.g)) %>% 
+  filter(mean.mass.g>=1644.90)
+intersect(top10_homerange$common.name, top10_bodymass$common.name)
+```
+Research Question: How much overlap exists between the top ten marine fish species by home range size and the top ten by body mass?”
+
+Conclusion: Only five of the top ten marine fish species ranked by home range overlap with the top ten ranked by body mass.  These species are the mutton snapper, red grouper, black grouper, greasy grouper, and coral grouper.  This partial overlap suggests that body mass alone does not fully explain the variation in home range among marine fish species.
+
+## Knit and Upload
+Please knit your work as an .html file and upload to Canvas. Homework is due before the start of the next lab. No late work is accepted. Make sure to use the formatting conventions of RMarkdown to make your report neat and clean!  

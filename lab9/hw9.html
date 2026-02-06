@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Your Name Here" />
+<meta name="author" content="Arden Moser" />
 
 <meta name="date" content="2026-02-05" />
 
@@ -375,7 +375,7 @@ display: none;
 
 
 <h1 class="title toc-ignore">Homework 9</h1>
-<h4 class="author">Your Name Here</h4>
+<h4 class="author">Arden Moser</h4>
 <h4 class="date">2026-02-05</h4>
 
 </div>
@@ -7798,16 +7798,18 @@ sydneybeaches</code></pre>
 ## 3689  151.2706 -33.90056 08/08/2018                       1
 ## 3690  151.2706 -33.90056 14/08/2018                       0</code></pre>
 <ol start="2" style="list-style-type: decimal">
-<li><p>Are these data “tidy” per the definitions of the tidyverse? How
-do you know? Are they in wide or long format?<br />
+<li>Are these data “tidy” per the definitions of the tidyverse? How do
+you know? Are they in wide or long format?<br />
+<br />
 Per the definitions of tidyverse, this data is NOT tidy because there
 are values found in more than one cell, especially the longitudes and
 latitudes. The data is also in the long format due to repeated character
 variables, including Council and Site.<br />
-</p></li>
-<li><p>We are only interested in the variables site, date, and
+<br />
+</li>
+<li>We are only interested in the variables site, date, and
 enterococci_cfu_100ml. Make a new object focused on these variables
-only. Name the object <code>sydneybeaches_long</code></p></li>
+only. Name the object <code>sydneybeaches_long</code></li>
 </ol>
 <pre class="r"><code>sydneybeaches_long &lt;- sydneybeaches %&gt;% 
   select(Site, Date, Enterococci..cfu.100ml.)
@@ -15331,17 +15333,35 @@ wide format.</li>
 ## #   `Malabar Beach` &lt;dbl&gt;, `Maroubra Beach` &lt;dbl&gt;,
 ## #   `South Maroubra Beach` &lt;dbl&gt;, `South Maroubra Rockpool` &lt;dbl&gt;,
 ## #   `Tamarama Beach` &lt;dbl&gt;</code></pre>
-<ol start="10" style="list-style-type: decimal">
-<li>Explore the data! Do one analysis of your choice that includes a
-minimum of three lines of code.</li>
-</ol>
-</div>
-<div id="knit-and-upload" class="section level2">
-<h2>Knit and Upload</h2>
-<p>Please knit your work as an .html file and upload to Canvas. Homework
-is due before the start of the next lab. No late work is accepted. Make
-sure to use the formatting conventions of RMarkdown to make your report
-neat and clean!</p>
+<p><br />
+The most polluted beach in 2013 was Little Bay Beach with an average
+121.5345 cfu/100 mL <em>enterococci</em> that year.<br />
+<br />
+10. Explore the data! Do one analysis of your choice that includes a
+minimum of three lines of code.</p>
+<pre class="r"><code>sydneybeaches_long %&gt;% 
+  separate(Date, into = c(&quot;day&quot;, &quot;month&quot;, &quot;year&quot;), sep = &quot;/&quot;) %&gt;% 
+  filter(year == &quot;2014&quot;) %&gt;% 
+  group_by(Site)%&gt;% 
+  summarize(average_pollution = mean(Enterococci..cfu.100ml.)) %&gt;% 
+  arrange(desc(average_pollution)) %&gt;% 
+  filter(average_pollution &gt; 35)</code></pre>
+<pre><code>## # A tibble: 4 × 2
+##   Site                    average_pollution
+##   &lt;chr&gt;                               &lt;dbl&gt;
+## 1 Malabar Beach                        54.5
+## 2 Coogee Beach                         52.6
+## 3 South Maroubra Rockpool              40.6
+## 4 Tamarama Beach                       39.6</code></pre>
+<p><br />
+In 2014, the sites that exceeded 35 cfu/100 mL of <em>enterococci</em>
+were Malabar Beach, Coogee Beach, South Maroubar Rockpool, and Tamarama
+Beach.<br />
+<br />
+## Knit and Upload Please knit your work as an .html file and upload to
+Canvas. Homework is due before the start of the next lab. No late work
+is accepted. Make sure to use the formatting conventions of RMarkdown to
+make your report neat and clean!</p>
 </div>
 
 

@@ -51,6 +51,7 @@ gapminder %>%
 \
 **195 countries** are represented in the data.
 \
+\
 3. Which five countries have had the largest absolute population growth between 1925-2025? Show this as a table.
 ```{r}
 gapminder %>% 
@@ -66,7 +67,8 @@ gapminder %>%
   filter(absolute_pop_growth >= 231082046)
 ```
 \
-The five countries have had the largest absolute population growth between 1925-2025 are **India, China, Indonesia, Pakistan, and the USA**
+The five countries have had the largest absolute population growth between 1925-2025 are **India, China, Indonesia, Pakistan, and the USA**.
+\
 \
 4. Make a plot that shows population growth over time for the top country you found in question #3.
 ```{r}
@@ -115,6 +117,7 @@ p + theme_stata()
 \
 Over time, the distribution of life expectancy shifted from the younger 20-40 years to the much older 60-80 years.
 \
+\
 7. We are interested in the relationship between per capita GDP and life expectancy; i.e. does having more money help you live longer in 2025? Show this as a plot. (Suggestion! Remove Monaco as an extreme outlier.)
 ```{r}
 gapminder %>% 
@@ -132,25 +135,76 @@ gapminder %>%
 \
 Generally, having more money helped you live longer in 2025.
 \
+\
 8. Which five countries have had the highest absolute GDP per capita growth over the past 50 years? Show this as a table. (Suggestion! Remove Monaco as an extreme outlier.)
 ```{r}
-# 2025-50 = 1975
-gapminder
+gapminder %>%
+  filter(country != "Monaco") %>% 
+  select(country, year, gdp) %>% 
+  pivot_wider(
+    names_from = year,
+    values_from = gdp,
+    names_prefix = "gdp_"
+  ) %>%
+  group_by(country) %>% 
+  summarise(absolute_gdp_growth = gdp_2025 - gdp_1975) %>% 
+  arrange(desc(absolute_gdp_growth)) %>% 
+  filter(absolute_gdp_growth >= 69382.41952)
 ```
-
+\
+The five countries that have had the highest absolute GDP per capita growth over the past 50 years are **Singapore, Ireland, Luxembourg, Guyana, and Norway**.
+\
+\
 9. How does per capita GDP growth compare between these same five countries over the past 50 years? Show this as a plot.
 ```{r}
-
+p <- gapminder %>% 
+  filter(country == c("Singapore", "Ireland", "Luxembourg", "Guyana", "Norway"), year >= 1975) %>% 
+  ggplot(aes(x = year, y = gdp, color = country)) +
+  geom_line() +
+  scale_y_log10() +
+  scale_x_continuous(breaks = seq(1975, 2025, by = 5), minor_breaks = NULL) +
+  labs(
+    title = "per Capita GDP of Top Five Richest Countries, 1975-2025",
+    x = "Years",
+    y = "per Capita GDP (log10)"
+  )
+p + theme_stata()+ 
+  theme(legend.position = "right")
 ```
 
 10. Do one analysis of your choice that includes a table and plot as outputs.
 ```{r}
-
+gapminder %>%
+  select(country, year, lex) %>% 
+  pivot_wider(
+    names_from = year,
+    values_from = lex,
+    names_prefix = "lex_"
+  ) %>%
+  group_by(country) %>% 
+  summarise(absolute_lex_change = lex_2025 - lex_1975) %>% 
+  arrange(desc(absolute_lex_change)) %>% 
+  filter(absolute_lex_change >= 25.13)
 ```
 
 ```{r}
-
+p <- gapminder %>% 
+  filter(country == c("Cambodia", "Maldives", "Ethiopia", "Bangladesh", "Lao"), year >= 1975) %>% 
+  ggplot(aes(x = year, y = lex, color = country)) +
+  geom_line() +
+  scale_x_continuous(breaks = seq(1975, 2025, by = 5), minor_breaks = NULL) +
+  labs(
+    title = "Life Expectancy of Top Five Countries, 1975-2025",
+    x = "Years",
+    y = "Life Expectancy (Years)"
+  )
+p + theme_stata()+ 
+  theme(legend.position = "right")
 ```
+\
+The five countries that have had the highest raise of life expectancy over the past 50 years are **Cambodia, Maldives, Ethiopia, Bangladesh, and Lao**.
+\
+\
 
 ## Knit and Upload
 Please knit your work as an .html file and upload to Canvas. Homework is due before the start of the next lab. No late work is accepted. Make sure to use the formatting conventions of RMarkdown to make your report neat and clean! 

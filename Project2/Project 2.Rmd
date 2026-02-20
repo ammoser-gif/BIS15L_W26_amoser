@@ -1,0 +1,195 @@
+---
+title: "Dataset_Test"
+output: html_document
+date: "2026-02-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
+library("janitor")
+```
+
+# Marine mammal recovery is associated with the resurgence of a nematode parasite
+Nearly a century of data on nematode parasite abundance to understand how risks to marine mammal health have shifted in response to environmental change.
+- Contained in Race Rocks conservatory
+
+Load and glimpse dataset
+```{r}
+compiled_data_cleaned <- compiled_data %>% clean_names()
+glimpse(compiled_data_cleaned)
+```
+
+In this compiled dataset, each row is a parasite species in an individual fish. The columns represent different variables:
+
+site: the latitude and longitude the fish was collected
+
+year: the year the fish was collected
+- 1880 to 2019
+- Potentially useful to show trends over time
+
+fis_id: the institution and catalog number of the fish
+- Individual Fish, not species
+
+length: the standardized length of the fish
+
+long: longitude collected
+- May be useful for a scatter plot on a map
+
+lat: latitude collected
+- May be useful for a scatter plot on a map
+
+fish_spc: general common name of the fish
+
+para_spc: the species of parasite collected from the fish
+
+count: the number of parasites collected of that species from the fish
+
+sfish_density: when available, the standardized population density of that fish species in that year
+- Omit from analysis for having all NA's
+
+temp_na_rm: the water temperature from that year, with NAs removed, from Race Rocks in degress Celcius
+
+bd_v_soil_biomarker: average soil biomarker concentration reading for that year
+
+par_type: general type of parasite
+
+lifecycle: type of parasite life cycle, direct (single host) or complex (multihost)
+
+nhosts: number of hosts needed to complete the parasite's life cycle
+
+terminal: whether the species was a terminal host or not,  0 = no, 1 = yes, 2 = "unknown"
+- Final host for parasite's adult form
+
+ord2raw: PC2 from the PCA compiling pollutant information
+
+ord1raw: PC1 from the PCA compiling pollutant information
+
+ord2: LOESS prediction of PC2
+
+ord1: LOESS prediction of PC1
+
+temp_smooth: the simple moving average (sma) of the temperature for that year
+
+```{r}
+compiled_data_cleaned %>% 
+  distinct(year) %>% 
+  arrange(desc(year))
+```
+
+Test Analysis: Count of fish sampled per year
+```{r}
+compiled_data_cleaned %>% 
+  group_by(year) %>% 
+  count(fish_spc) %>%
+  ggplot(aes(x = year)) +
+  geom_bar(fill = "Gray") +
+  labs(
+    title = "Sample size per Year, 1880 - 2019",
+    x = "Year",
+    y = "Number of Fish Sampled"
+  )
+```
+Test analysis: Average water temperature over years (Some years omitted due to NA's)
+```{r}
+compiled_data_cleaned %>% 
+  select(temp_na_rm, year) %>% 
+  na.omit() %>% 
+  group_by(year) %>% 
+  summarise(average_temp = mean(temp_na_rm)) %>% 
+  arrange(desc(year)) %>% 
+  ggplot(aes(x = year, y = average_temp)) +
+  geom_line(color = "red") +
+  labs(
+    title = "Average Water Temperature in Race Rock, 1921-2018",
+    x = "Year",
+    y = "Temperature (C)"
+  )
+```
+Test analysis: Abundance of parasites over years (Some years omitted due to NA's)
+```{r}
+compiled_data_cleaned %>% 
+  select(para_spc, year) %>% 
+  na.omit() %>% 
+  group_by(year) %>% 
+  filter(year >= 1921, year <= 2018) %>% 
+  arrange(desc(year)) %>% 
+  count(para_spc) %>% 
+  summarise(number_of_parasites = sum(n)) %>%
+  ggplot(aes(x = year, y = number_of_parasites)) +
+  geom_line(color = "red") +
+  labs(
+    title = "Abundance of Parasites in Race Rock, 1921-2018",
+    x = "Year",
+    y = "Number of Parasites"
+  )
+```
+
+Test Analysis: Scatter Plot of Sole Sampled in 2019
+```{r}
+compiled_data_cleaned %>% 
+  filter(year == 2019) %>% 
+  ggplot(aes(x = long, y = lat, fill = year)) +
+  geom_point()
+```
+
+# Vampire bats in Belize harbor multiple Trypanosoma cruzi genotypes: implications for parasite transmission at the wildlife–domestic–human interface
+Data of parasite **Trypanosoma cruzi** infection of vampire bats in Belize harbor to study the spread of Changas disease in Central America
+
+## Load and glimpse dataset
+```{r}
+bats <- read_csv("data/Dunsmore_et_al_2026_PLOS_NTDs.csv") %>% clean_names()
+bats$year <- factor(batuzi, levels = c(0, 1), labels = c("Negative", "Positive")s$year)
+glimpse(bats)
+```
+## Description of Dataset
+Sample Size: 205 vampire bats over three years (2019, 2021, 2022)
+\
+Variables:
+bzid: unique identifier for each individual bat (character)
+di: unique identifier for each individual bat based on band number (character)
+spec: 4-letter bat species code (DERO = Desmodus rotundus)
+- May omit due to *DERO* being the only value
+```{r}
+bats %>% 
+  distinct(spec)
+```
+date: capture date (MM/DD/YYYY)
+year: capture year (YYYY)
+site: code for capture site (KK = Ka'Kabish, LAR = Lamanai Archeological Reserve)
+sx: binary code for sex (M = male, F = female)
+rp: code for reproductive status (N = non-reproductive, Y = reproductive, L = lactating, P = pregnant)
+age: code for age grouping (A = adult, JSA = juvenile or subadult)
+sat_dna: binary PCR result (0/1) for genomic satellite DNA
+- One of two possible identifiers of **T. cruzi** infection
+k_dna: binary PCR result (0/1) for minicircle kinetoplast DNA
+- One of two possible identifiers of **T. cruzi** infection
+tcruzi: binary PCR result for T. cruzi (SatDNA == 1 or kDNA == 1)
+- Confirmation of **T. cruzi** infection
+
+## Test Analyses
+Test of balanced sampling per year
+```{r}
+bats %>% 
+  ggplot(aes(x = year)) +
+  geom_bar()
+```
+Unbalanced sampling, particularly for 2021.
+\
+Comparison of T.cruzi infections over years per site
+```{r}
+bats %>% 
+  group_by(year, site) %>% 
+  summarize(infected_count =  sum(tcruzi)) %>% 
+  ggplot(aes(x = year, y = infected_count, fill = site)) +
+  geom_col()
+```
+\
+Line Plot of Infected per day in 2019
+```{r}
+bats %>%
+  group_by(date) %>% 
+  summarize(infected_count = sum(tcruzi)) %>% 
+  ggplot(aes(x = date, y = infected_count)) +
+  geom_line()
+```

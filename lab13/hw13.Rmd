@@ -48,8 +48,26 @@ amniota_with_na %>%
 summary(amniota_with_na)
 ```
 5. Use `naniar` to visualize the number of NA's in each variable. Which variables have the most NA's?
-
+```{r}
+amniota_with_na %>% 
+  miss_var_summary()
+```
+\
+\
+The **"subspecies" and "female_body_mass_at_maturity_g"** variables have the most NA's.  In fact, they both have 100% NA's for their values.
+\
+\
 6. Calculate the number of NAs in the `egg_mass_g` column sorted by taxonomic class; i.e. how many NA's are present in the `egg_mass_g` column in birds, mammals, and reptiles? Does this results make sense biologically? How do these results affect your interpretation of NA's?
-
+```{r}
+amniota_with_na %>%
+  select(egg_mass_g, class) %>% 
+  group_by(class) %>% 
+  miss_var_summary()
+```
+\
+\
+In order from most NA's to least, it is mammals, then reptiles, and finally birds.  Notably, mammals have 100% NA's for egg mass.  However, this makes sense biologically since most mammals don't lay eggs.  This suggests that NA's do not always indicate missing data.  Rather, in some cases, they represent variables that do not make sense biologically.
+\
+\
 ## Knit and Upload
 Please knit your work as an .html file and upload to Canvas. Homework is due before the start of the next lab. No late work is accepted. Make sure to use the formatting conventions of RMarkdown to make your report neat and clean! 

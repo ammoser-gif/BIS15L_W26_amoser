@@ -82,7 +82,7 @@ lat_min <- 32.855
 lat_max <- 39.57833
 ```
 
-```{r}
+```{r, eval=F, echo=T}
 fatalities <- sharks %>%
   filter(injury == "fatal")
 leaflet(fatalities) %>% 
